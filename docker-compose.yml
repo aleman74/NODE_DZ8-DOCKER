@@ -1,0 +1,30 @@
+services: 
+
+  counter:
+    image: aleman74/counter:latest
+
+    ports: 
+      - 3001:3001
+    environment: 
+      - PORT=3001   
+    volumes:
+      - counter-data:/data:rw
+
+  book:
+    image: my_book:latest
+    build: .
+#    image: aleman74/my_book:1.0.0
+    ports: 
+      - 80:3000
+    environment:
+      - PORT=3000
+      - COUNTER_URL=http://counter:3001/counter/
+    depends_on:
+      - counter
+volumes:
+  counter-data:
+      driver: local
+      driver_opts:
+         type: none
+         o: bind
+         device: C:\WORK\Course\Нетология\Node_js\code\NODE_DZ8-DOCKER-COUNTER\data:rw

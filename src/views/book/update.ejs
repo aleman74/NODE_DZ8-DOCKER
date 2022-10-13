@@ -1,0 +1,15 @@
+<%- include('../base/header', {title: title}) %>
+
+<h1><%= title %></h1>
+
+<div class="row">
+    <div class="col-sm-6">
+        
+        <form action="/api/books/update/<%= book.id %>" method="POST" class="mt-5" enctype="multipart/form-data">
+            <%- include('../base/form') %>
+        </form>
+
+    </div>
+</div>
+
+<%- include('../base/footer') %>
