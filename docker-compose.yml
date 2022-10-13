@@ -11,9 +11,9 @@ services:
       - counter-data:/data:rw
 
   book:
-    image: my_book:latest
-    build: .
-#    image: aleman74/my_book:1.0.0
+#    image: my_book:latest
+#    build: .
+    image: aleman74/my_book:1.0.0
     ports: 
       - 80:3000
     environment:
