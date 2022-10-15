@@ -1,9 +1,12 @@
 const express = require('express');
 const my_multer = require('../lib/multer');
+const module_counter = require('../bl/counter');
 const router = express.Router();
 module.exports = router;
 
 const {data_obj, Book} = require('../data/book');
+
+const {COUNTER_URL} = require('../config');
 
 router.get('/', (req, res) => {
 //    res.json(data_obj.books);
@@ -30,12 +33,28 @@ router.get('/:id', (req, res) => {
 
     const idx = data_obj.books.findIndex(el => el.id === id);
 
+    // Увеличиваем число просмотров
+    console.log('-----------------------------');
+    
+    let url_get = COUNTER_URL + id;
+    let view_count = module_counter.GetCounter(url_get);
+    console.log('view_count = ', view_count);
+
+    view_count += 1;
+    
+    let url_post = COUNTER_URL + id + '/incr';
+    let v2 = module_counter.SetCounter(url_post);
+    console.log('counter_set = ', v2);
+    
+    console.log('-----------------------------');
+    
     if( idx !== -1) {
 //        res.json(data_obj.books[idx]);
 
         res.render("book/view", {
             title: `Книга № ${idx + 1}`,
-            book: data_obj.books[idx]
+            book: data_obj.books[idx],
+            view_count: view_count
         });    
 
     } else {

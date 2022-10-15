@@ -20,22 +20,6 @@ app.use(express.static(__dirname + '/public'));            // Разрешаем
 app.set('views', __dirname + '/views');
 
 
-const module_counter = require('./bl/counter');
-
-console.log('-----------------------------');
-
-let url_get = COUNTER_URL + '1';
-let v = module_counter.GetCounter(url_get);
-console.log('counter_get = ', v);
-
-let url_post = COUNTER_URL + '1/incr';
-let v2 = module_counter.SetCounter(url_post);
-console.log('counter_set = ', v2);
-
-v = module_counter.GetCounter(url_get);
-console.log('counter_get = ', v);
-console.log('-----------------------------');
-
 // ----------------------------------------
 // Обработчики запросов
 app.use('/api/books/', book_router);

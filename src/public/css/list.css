@@ -4,3 +4,8 @@
 	justify-content: space-around;
 	align-items: center;
 }
+
+.views {
+	color: green;
+	font-weight: bold;
+}

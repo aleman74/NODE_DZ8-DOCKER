@@ -54,3 +54,6 @@ docker-compose down
 
 # Для просмотра данных
 docker volume ls
+
+
+http://localhost/api/books
