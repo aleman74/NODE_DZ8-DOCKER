@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');   
 
 const user_router = require('./api/user');
 const book_router = require('./api/book');
@@ -8,8 +9,8 @@ const file_download_router = require('./api/file_download');
 const error_404 = require('./error/error_404');
 const error_handler = require('./error/error_handler');
 
-const {PORT, COUNTER_URL} = require('./config');
-console.log('COUNTER_URL = ', COUNTER_URL);
+const {PORT, COUNTER_URL, MONGO_URL} = require('./config');
+// console.log('COUNTER_URL = ', COUNTER_URL);
 
 const app = express();
 app.use(express.urlencoded({extended: false}));
@@ -35,6 +36,21 @@ app.use(error_handler);
 
 // ----------------------------------------
 // Запускаем сервер
-console.log('PORT = ' + PORT);
-app.listen(PORT);
+// ----------------------------------------
+async function start(PORT, MONGO_URL) {
+
+    console.log('PORT = ', PORT);
+    console.log('MONGO_URL = ', MONGO_URL);
+
+    try {
+        await mongoose.connect(MONGO_URL);
+        app.listen(PORT)
+
+    } catch (ex) {
+        console.log('ERROR !!!');
+        console.log(ex);
+    }
+}
+
+start(PORT, MONGO_URL);
 // ----------------------------------------

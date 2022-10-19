@@ -1,6 +1,10 @@
 const express = require('express');
 const my_multer = require('../lib/multer');
+const { v4: uuid } = require('uuid');
+
 const module_counter = require('../bl/counter');
+const table_book = require('../models/table_book');
+
 const router = express.Router();
 module.exports = router;
 
@@ -8,12 +12,13 @@ const {data_obj, Book} = require('../data/book');
 
 const {COUNTER_URL} = require('../config');
 
-router.get('/', (req, res) => {
-//    res.json(data_obj.books);
+router.get('/', async (req, res) => {
+
+    const rows = await table_book.find().select('-__v');       // Получаем все книги
 
     res.render("book/index", {
         title: "Список книг",
-        books: data_obj.books
+        books: rows             // data_obj.books
     });    
 });
 
@@ -27,11 +32,10 @@ router.get('/create', (req, res) => {
     });    
 });
     
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
 
     const {id} = req.params;
-
-    const idx = data_obj.books.findIndex(el => el.id === id);
+    const row = await table_book.findOne({id}).select('-__v');
 
     // Увеличиваем число просмотров
     console.log('-----------------------------');
@@ -48,12 +52,12 @@ router.get('/:id', (req, res) => {
     
     console.log('-----------------------------');
     
-    if( idx !== -1) {
-//        res.json(data_obj.books[idx]);
+//    if( idx !== -1) {
+    if (row != null) {
 
         res.render("book/view", {
-            title: `Книга № ${idx + 1}`,
-            book: data_obj.books[idx],
+            title: `Книга`,
+            book: row,                           // data_obj.books[idx],
             view_count: view_count
         });    
 
@@ -64,19 +68,17 @@ router.get('/:id', (req, res) => {
     }
 });
 
-router.get('/update/:id', (req, res) => {
+router.get('/update/:id', async (req, res) => {
 
     const {id} = req.params;
+    const row = await table_book.findOne({id}).select('-__v');
 
-    const idx = data_obj.books.findIndex(el => el.id === id);
-
-    if( idx !== -1) {
-//        res.json(data_obj.books[idx]);
+    if (row != null) {
 
         res.render("book/update", {
-            title: `Книга № ${idx + 1}`,
-            book: data_obj.books[idx]
-        });    
+            title: `Книга`,
+            book: row                   // data_obj.books[idx]
+        });
 
     } else {
         res.redirect('/404');
@@ -86,25 +88,28 @@ router.get('/update/:id', (req, res) => {
 
 router.put('/:id', 
     my_multer.single('inputFile'),       // Название POST параметра
-    (req, res) => {
+    async (req, res) => {
 
     const {id} = req.params;
     const {title, description, authors, favorite, fileCover, fileName} = req.body;
 
-    const idx = data_obj.books.findIndex(el => el.id === id);
+    const row = await table_book.findOne({id}).select('-__v');
 
-    if (idx !== -1){
-        data_obj.books[idx] = {
-            ...data_obj.books[idx],
+    if (row != null) {
+
+        const new_row = new table_book({
+            ...row,
             title,
             description,
             authors,
             favorite,
             fileCover,
             fileName
-        }
+        });    
 
-        res.json(data_obj.books[idx]);
+        await table_book.findByIdAndUpdate(row._id.toString(), new_row);
+
+        res.json(new_row);
     } else {
 //        res.status(404);
 //        res.json('Объект не найден');
@@ -114,7 +119,7 @@ router.put('/:id',
 
 router.post('/create', 
     my_multer.single('inputFile'),       // Название POST параметра
-    (req, res) => {
+    async (req, res) => {
 
     let {title, description, authors, favorite, fileCover} = req.body;
 
@@ -138,8 +143,19 @@ router.post('/create',
         console.log('FILE', fileName, fileBook);
     }
 
-    const newBook = new Book(title, description, authors, favorite, fileCover, fileName, fileBook);
-    data_obj.books.push(newBook);
+    const id = uuid();
+    const new_row = new table_book({
+        id,
+        title,
+        description,
+        authors,
+        favorite,
+        fileCover,
+        fileName,
+        fileBook
+    });    
+
+    await new_row.save();
 
 //    res.status(201);
 //    res.json(newBook);
@@ -149,7 +165,7 @@ router.post('/create',
 
 router.post('/update/:id', 
     my_multer.single('inputFile'),       // Название POST параметра
-    (req, res) => {
+    async (req, res) => {
 
     const {id} = req.params;
     let {title, description, authors, favorite, fileCover} = req.body;
@@ -174,11 +190,14 @@ router.post('/update/:id',
     }
 
     // Обновляем запись
-    const idx = data_obj.books.findIndex(el => el.id === id);
+//    const row = await table_book.findById(id).select('-__v');
+    const row = await table_book.findOne({id}).select('-__v');
 
-    if (idx !== -1){
-        data_obj.books[idx] = {
-            ...data_obj.books[idx],
+
+    if (row != null) {     
+
+        const new_row = new table_book({
+            _id: row._id.toString(),
             title,
             description,
             authors,
@@ -186,7 +205,10 @@ router.post('/update/:id',
             fileCover,
             fileName,
             fileBook
-        }
+        });    
+
+        await table_book.findByIdAndUpdate(row._id.toString(), new_row);
+
 
         res.redirect('/api/books/');
 
@@ -196,13 +218,14 @@ router.post('/update/:id',
 
 });
 
-router.post('/delete/:id', (req, res) => {
+router.post('/delete/:id', async (req, res) => {
     const {id} = req.params;
-    const idx = data_obj.books.findIndex(el => el.id === id);
+    const row = await table_book.findOne({id}).select('-__v');
         
-    if(idx !== -1){
-        data_obj.books.splice(idx, 1)
-//        res.json(true)
+    if (row != null) {        
+
+        await table_book.deleteOne({_id: row._id.toString()});
+
         res.redirect('/api/books/');
     } else {
 //        res.status(404);

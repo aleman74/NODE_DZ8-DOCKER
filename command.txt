@@ -6,6 +6,7 @@ npm i express
 npm i uuid
 npm i multer
 npm i ejs
+npm i mongoose
 
 npm install -D nodemon
 
@@ -49,7 +50,7 @@ docker logs ...
 // docker-compose.yml
 // -----------------------------------
 Формируем docker-compose файл и запускаем сразу несколько образов.
-docker-compose up
+docker-compose up --build
 docker-compose down
 
 # Для просмотра данных
@@ -57,6 +58,9 @@ docker volume ls
 
 
 http://localhost/api/books
+
+-- Mongo Express
+http://localhost:8081/
 
 
 #    image: my_book:latest
